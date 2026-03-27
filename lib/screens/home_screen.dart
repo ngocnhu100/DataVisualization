@@ -101,68 +101,90 @@ class HomeScreen extends StatelessWidget {
       pinned: true,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF42A5F5)],
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 40),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: const Icon(Icons.bar_chart_rounded,
-                            color: Colors.white, size: 28),
-                      ),
-                      const SizedBox(width: 14),
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Flutter Chart Demo',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          Text(
-                            'CSC13118 · Nhóm 15',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'So sánh fl_chart · syncfusion · graphic',
-                    style: TextStyle(
-                      color: Colors.white60,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
+        background: LayoutBuilder(
+          builder: (context, constraints) {
+            const gradient = BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF42A5F5)],
               ),
-            ),
-          ),
+            );
+
+            final topInset = MediaQuery.paddingOf(context).top;
+            final minExtent = kToolbarHeight + topInset;
+            final t = ((constraints.maxHeight - minExtent) / (200 - minExtent))
+                .clamp(0.0, 1.0)
+                .toDouble();
+            final canShowHeroContent = constraints.maxHeight >= 136;
+
+            return Container(
+              decoration: gradient,
+              child: SafeArea(
+                child: Padding(
+                  // Reserve bottom space for collapsing title.
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 56),
+                  child: !canShowHeroContent || t <= 0.35
+                      ? const SizedBox.shrink()
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 6 + (12 * t)),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: const Icon(Icons.bar_chart_rounded,
+                                      color: Colors.white, size: 28),
+                                ),
+                                const SizedBox(width: 14),
+                                const Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Flutter Chart Demo',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
+                                    Text(
+                                      'CSC13118 · Nhóm 15',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            if (t > 0.72) ...[
+                              const SizedBox(height: 16),
+                              Opacity(
+                                opacity: ((t - 0.72) / 0.28).clamp(0.0, 1.0),
+                                child: const Text(
+                                  'So sánh fl_chart · syncfusion · graphic',
+                                  style: TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                ),
+              ),
+            );
+          },
         ),
         title: const Text(
           'Flutter Chart Demo',
@@ -204,45 +226,152 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _compareHeaderRow(),
-          const Divider(height: 12),
-          _compareRow('Dễ sử dụng', '⭐⭐⭐', '⭐⭐', '⭐'),
-          _compareRow('Loại biểu đồ', '⭐⭐', '⭐⭐⭐', '⭐⭐'),
-          _compareRow('Tùy biến', '⭐⭐', '⭐⭐⭐', '⭐⭐⭐'),
-          _compareRow('Hiệu năng', '⭐⭐', '⭐⭐⭐', '⭐⭐'),
-          _compareRow('Chi phí', 'Miễn phí', 'Miễn phí', 'Miễn phí'),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 360;
+              final labelWidth = isCompact ? 74.0 : 90.0;
+              final textSize = isCompact ? 11.0 : 12.0;
+
+              return Column(
+                children: [
+                  _compareHeaderRow(
+                    labelWidth: labelWidth,
+                    textSize: textSize,
+                  ),
+                  const Divider(height: 12),
+                  _compareRow(
+                    'Dễ sử dụng',
+                    '⭐⭐⭐',
+                    '⭐⭐',
+                    '⭐',
+                    labelWidth: labelWidth,
+                    textSize: textSize,
+                  ),
+                  _compareRow(
+                    'Loại biểu đồ',
+                    '⭐⭐',
+                    '⭐⭐⭐',
+                    '⭐⭐',
+                    labelWidth: labelWidth,
+                    textSize: textSize,
+                  ),
+                  _compareRow(
+                    'Tùy biến',
+                    '⭐⭐',
+                    '⭐⭐⭐',
+                    '⭐⭐⭐',
+                    labelWidth: labelWidth,
+                    textSize: textSize,
+                  ),
+                  _compareRow(
+                    'Hiệu năng',
+                    '⭐⭐',
+                    '⭐⭐⭐',
+                    '⭐⭐',
+                    labelWidth: labelWidth,
+                    textSize: textSize,
+                  ),
+                  _compareRow(
+                    'Chi phí',
+                    'Miễn phí',
+                    'Trả phí*',
+                    'Miễn phí',
+                    labelWidth: labelWidth,
+                    textSize: textSize,
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            '* Syncfusion có Community License miễn phí cho cá nhân, mục đích học tập và doanh nghiệp nhỏ.',
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey,
+              height: 1.35,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _compareHeaderRow() {
+  Widget _compareHeaderRow({
+    required double labelWidth,
+    required double textSize,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          const SizedBox(width: 90),
-          Expanded(child: Center(child: Text('fl_chart', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1565C0))))),
-          Expanded(child: Center(child: Text('syncfusion', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32))))),
-          Expanded(child: Center(child: Text('graphic', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF6A1B9A))))),
+          SizedBox(width: labelWidth),
+          Expanded(
+              child: Center(
+                  child: Text('fl_chart',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: textSize,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1565C0))))),
+          Expanded(
+              child: Center(
+                  child: Text('syncfusion',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: textSize,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF2E7D32))))),
+          Expanded(
+              child: Center(
+                  child: Text('graphic',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: textSize,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF6A1B9A))))),
         ],
       ),
     );
   }
 
-  Widget _compareRow(String label, String a, String b, String c) {
+  Widget _compareRow(
+    String label,
+    String a,
+    String b,
+    String c, {
+    required double labelWidth,
+    required double textSize,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           SizedBox(
-            width: 90,
-            child: Text(label,
-                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            width: labelWidth,
+            child: Text(label, style: TextStyle(fontSize: textSize, color: Colors.grey)),
           ),
-          Expanded(child: Center(child: Text(a, style: const TextStyle(fontSize: 12)))),
-          Expanded(child: Center(child: Text(b, style: const TextStyle(fontSize: 12)))),
-          Expanded(child: Center(child: Text(c, style: const TextStyle(fontSize: 12)))),
+          Expanded(
+              child: Center(
+                  child: Text(a,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: textSize)))),
+          Expanded(
+              child: Center(
+                  child: Text(b,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: textSize)))),
+          Expanded(
+              child: Center(
+                  child: Text(c,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: textSize)))),
         ],
       ),
     );
@@ -422,35 +551,41 @@ class _LibraryCardState extends State<_LibraryCard> {
                                   ),
                                   Text(
                                     s.label,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    softWrap: false,
                                     style: const TextStyle(
                                         fontSize: 10, color: Colors.grey),
                                   ),
                                 ],
                               ),
                             )),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                                colors: widget.gradientColors),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Row(
-                            children: [
-                              Text('Demo',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold)),
-                              SizedBox(width: 4),
-                              Icon(Icons.arrow_forward_rounded,
-                                  color: Colors.white, size: 14),
-                            ],
-                          ),
-                        ),
                       ],
+                    ),
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(colors: widget.gradientColors),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Demo',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold)),
+                            SizedBox(width: 4),
+                            Icon(Icons.arrow_forward_rounded,
+                                color: Colors.white, size: 14),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
